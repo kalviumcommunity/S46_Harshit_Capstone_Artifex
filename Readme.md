@@ -28,4 +28,3 @@ Artifex is an online platform designed to connect artists and art enthusiasts by
 
 ### Reviews and Ratings:
 - Buyers can review and rate artworks, helping artists build credibility.
-
