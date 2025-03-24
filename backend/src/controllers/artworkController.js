@@ -85,11 +85,28 @@ const searchArtworks = async (req, res) => {
   }
 };
 
+// Create new artwork
+const createArtwork = async (req, res) => {
+    try {
+      const newArtwork = new Artwork({
+        ...req.body,
+        views: 0,
+        averageRating: 0
+      });
+      
+      const savedArtwork = await newArtwork.save();
+      res.status(201).json(savedArtwork);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  };
+
 
 
 module.exports = {
     getAllArtworks,
     getArtworkById,
     getArtworksByArtist,
-    searchArtworks
+    searchArtworks,
+    createArtwork,
   };
