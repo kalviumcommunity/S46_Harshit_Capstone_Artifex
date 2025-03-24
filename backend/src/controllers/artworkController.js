@@ -87,26 +87,67 @@ const searchArtworks = async (req, res) => {
 
 // Create new artwork
 const createArtwork = async (req, res) => {
-    try {
-      const newArtwork = new Artwork({
-        ...req.body,
-        views: 0,
-        averageRating: 0
-      });
-      
-      const savedArtwork = await newArtwork.save();
-      res.status(201).json(savedArtwork);
-    } catch (error) {
-      res.status(500).json({ message: error.message });
+  try {
+    const newArtwork = new Artwork({
+      ...req.body,
+      views: 0,
+      averageRating: 0,
+    });
+
+    const savedArtwork = await newArtwork.save();
+    res.status(201).json(savedArtwork);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Update artwork
+const updateArtwork = async (req, res) => {
+  try {
+    // Don't allow updates to views or averageRating through this endpoint
+    if (req.body.views) delete req.body.views;
+    if (req.body.averageRating) delete req.body.averageRating;
+
+    const updatedArtwork = await Artwork.findByIdAndUpdate(
+      req.params.id,
+      { $set: req.body },
+      { new: true }
+    );
+
+    if (!updatedArtwork) {
+      return res.status(404).json({ message: "Artwork not found" });
     }
-  };
 
+    res.status(200).json(updatedArtwork);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
+// Delete artwork
+const deleteArtwork = async (req, res) => {
+  try {
+    const deletedArtwork = await Artwork.findByIdAndDelete(req.params.id);
+
+    if (!deletedArtwork) {
+      return res.status(404).json({ message: "Artwork not found" });
+    }
+
+    // Delete all reviews associated with this artwork
+    await Review.deleteMany({ artwork: req.params.id });
+
+    res.status(200).json({ message: "Artwork deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
 module.exports = {
-    getAllArtworks,
-    getArtworkById,
-    getArtworksByArtist,
-    searchArtworks,
-    createArtwork,
-  };
+  getAllArtworks,
+  getArtworkById,
+  getArtworksByArtist,
+  searchArtworks,
+  createArtwork,
+  updateArtwork,
+  deleteArtwork,
+};
