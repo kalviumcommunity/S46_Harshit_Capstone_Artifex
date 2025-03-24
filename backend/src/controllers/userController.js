@@ -23,10 +23,47 @@ const getUserById = async (req, res) => {
   }
 };
 
+// Create new user
+const createUser = async (req, res) => {
+    try {
+      const { username, email, password, userType } = req.body;
+      
+      // Check if user already exists
+      const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+      if (existingUser) {
+        return res.status(400).json({ message: 'User already exists with this email or username' });
+      }
+      
+      const newUser = new User({
+        username,
+        email,
+        password,
+        userType,
+        displayName: req.body.displayName || username,
+        bio: req.body.bio || '',
+        profilePicture: req.body.profilePicture || '',
+        location: req.body.location || '',
+        website: req.body.website || '',
+        socialLinks: req.body.socialLinks || {}
+      });
+      
+      const savedUser = await newUser.save();
+      
+      // Remove password from response
+      const userResponse = savedUser.toObject();
+      delete userResponse.password;
+      
+      res.status(201).json(userResponse);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  };
+
 
 
 
 module.exports = {
   getAllUsers,
   getUserById,
+  createUser,
 };

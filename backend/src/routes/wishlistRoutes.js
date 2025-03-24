@@ -4,7 +4,7 @@ const wishlistController = require('../controllers/wishlistController');
 
 // Routes for wishlist
 router.get('/:userId', wishlistController.getUserWishlist);
-
+router.post('/', wishlistController.addToWishlist);
 
 
 
