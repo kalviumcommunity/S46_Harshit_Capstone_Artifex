@@ -28,10 +28,51 @@ const getUserWishlist = async (req, res) => {
   }
 };
 
-// Add artwork to wishlist
+// Add artwork to wishlist (from request body)
 const addToWishlist = async (req, res) => {
   try {
     const { userId, artworkId } = req.body;
+
+    let wishlist = await Wishlist.findOne({ user: userId });
+
+    // If no wishlist exists, create a new one
+    if (!wishlist) {
+      wishlist = new Wishlist({
+        user: userId,
+        artworks: [artworkId],
+      });
+    } else {
+      // Check if artwork is already in the wishlist
+      if (wishlist.artworks.includes(artworkId)) {
+        return res
+          .status(400)
+          .json({ message: "Artwork is already in the wishlist" });
+      }
+
+      // Add artwork to wishlist
+      wishlist.artworks.push(artworkId);
+    }
+
+    await wishlist.save();
+
+    const populatedWishlist = await Wishlist.findById(wishlist._id).populate({
+      path: "artworks",
+      populate: {
+        path: "artist",
+        select: "username displayName",
+      },
+    });
+
+    res.status(200).json(populatedWishlist);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Add artwork to wishlist (from URL params - for frontend compatibility)
+const addToWishlistByParams = async (req, res) => {
+  try {
+    const { userId, artworkId } = req.params;
 
     let wishlist = await Wishlist.findOne({ user: userId });
 
@@ -104,5 +145,6 @@ const removeFromWishlist = async (req, res) => {
 module.exports = {
   getUserWishlist,
   addToWishlist,
+  addToWishlistByParams,
   removeFromWishlist,
 };

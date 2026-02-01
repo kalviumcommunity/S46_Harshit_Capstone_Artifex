@@ -4,23 +4,30 @@ const Review = require("../models/Review");
 // Get all artworks with filters
 const getAllArtworks = async (req, res) => {
   try {
-    const { category, minPrice, maxPrice, medium, artist } = req.query;
+    const { category, minPrice, maxPrice, medium, artist, featured, limit } = req.query;
     const filter = {};
 
     // Apply filters if provided
     if (category) filter.category = category;
     if (medium) filter.medium = medium;
     if (artist) filter.artist = artist;
+    if (featured === "true") filter.isFeatured = true;
     if (minPrice || maxPrice) {
       filter.price = {};
       if (minPrice) filter.price.$gte = Number(minPrice);
       if (maxPrice) filter.price.$lte = Number(maxPrice);
     }
 
-    const artworks = await Artwork.find(filter)
+    let query = Artwork.find(filter)
       .populate("artist", "username displayName profilePicture")
       .sort({ createdAt: -1 });
 
+    // Apply limit if provided
+    if (limit) {
+      query = query.limit(parseInt(limit, 10));
+    }
+
+    const artworks = await query;
     res.status(200).json(artworks);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -65,12 +72,12 @@ const getArtworksByArtist = async (req, res) => {
 // Search artworks
 const searchArtworks = async (req, res) => {
   try {
-    const { query } = req.query;
+    const { query, limit } = req.query;
     if (!query) {
       return res.status(400).json({ message: "Search query is required" });
     }
 
-    const artworks = await Artwork.find({
+    let searchQuery = Artwork.find({
       $or: [
         { title: { $regex: query, $options: "i" } },
         { description: { $regex: query, $options: "i" } },
@@ -79,6 +86,11 @@ const searchArtworks = async (req, res) => {
       ],
     }).populate("artist", "username displayName");
 
+    if (limit) {
+      searchQuery = searchQuery.limit(parseInt(limit, 10));
+    }
+
+    const artworks = await searchQuery;
     res.status(200).json(artworks);
   } catch (error) {
     res.status(500).json({ message: error.message });
