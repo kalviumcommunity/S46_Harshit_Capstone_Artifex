@@ -36,8 +36,8 @@ app.use((err, req, res, next) => {
   res.status(500).send("Something broke!");
 });
 
-// Start server
-const PORT = process.env.PORT || 5200;
+// Start server - Updated to port 5000 for frontend compatibility
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
