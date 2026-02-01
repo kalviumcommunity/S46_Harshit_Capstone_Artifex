@@ -16,6 +16,8 @@ interface Artist {
   artworksCount: number
 }
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
 export function FeaturedArtists() {
   const [artists, setArtists] = useState<Artist[]>([])
   const [loading, setLoading] = useState(true)
@@ -24,7 +26,7 @@ export function FeaturedArtists() {
   useEffect(() => {
     const fetchArtists = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/users?role=artist&featured=true&limit=4")
+        const response = await fetch(`${API_URL}/api/users?role=artist&featured=true&limit=4`)
 
         if (!response.ok) {
           throw new Error("Failed to fetch artists")
